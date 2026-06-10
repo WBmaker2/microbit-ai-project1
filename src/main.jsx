@@ -15,6 +15,7 @@ import {
   Waves,
 } from 'lucide-react';
 import { isAlreadyClosedError, isAlreadyOpenError, isPortOpen, openPortIfNeeded } from './serialConnection.js';
+import { loadModelLabelsFromMetadata } from './teachableMachine.js';
 import './styles.css';
 
 const EXAMPLE_MODEL_URL = 'https://teachablemachine.withgoogle.com/models/3_iGiqd9o/';
@@ -474,11 +475,30 @@ function AiFanPage({ serial }) {
   const handleModelOk = async () => {
     try {
       const normalizedUrl = normalizeModelUrl(modelInput);
+      setModelStatus('모델 class 확인 중');
+      setLabels([]);
+      labelsRef.current = [];
+      const nextLabels = await loadModelLabelsFromMetadata(normalizedUrl);
       setModelUrl(normalizedUrl);
       setModelInput(normalizedUrl);
+      labelsRef.current = nextLabels;
+      setLabels(nextLabels);
       setModelStatus('모델 주소 확인 완료');
     } catch (error) {
+      setLabels([]);
+      labelsRef.current = [];
       setModelStatus(error.message);
+    }
+  };
+
+  const handleModelInputChange = (event) => {
+    const nextInput = event.target.value;
+    setModelInput(nextInput);
+
+    if (nextInput !== modelUrl) {
+      setLabels([]);
+      labelsRef.current = [];
+      setModelStatus('모델 준비 전');
     }
   };
 
@@ -599,7 +619,7 @@ function AiFanPage({ serial }) {
               id="model-url"
               type="url"
               value={modelInput}
-              onChange={(event) => setModelInput(event.target.value)}
+              onChange={handleModelInputChange}
               placeholder={EXAMPLE_MODEL_URL}
             />
             <button className="secondary-action" type="button" onClick={handleModelOk}>
