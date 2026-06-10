@@ -14,6 +14,7 @@ import {
   Usb,
   Waves,
 } from 'lucide-react';
+import { isAlreadyClosedError, isAlreadyOpenError, isPortOpen, openPortIfNeeded } from './serialConnection.js';
 import './styles.css';
 
 const DEFAULT_MODEL_URL = 'https://teachablemachine.withgoogle.com/models/3_iGiqd9o/';
@@ -102,17 +103,65 @@ function useSerialConnection() {
 
   const releaseWriter = useCallback(() => {
     if (writerRef.current) {
-      writerRef.current.releaseLock();
+      try {
+        writerRef.current.releaseLock();
+      } catch {
+        // The lock may already be released after writer.close().
+      }
+
       writerRef.current = null;
     }
   }, []);
 
-  const disconnect = useCallback(async () => {
-    try {
-      releaseWriter();
+  const closeWriter = useCallback(async () => {
+    const writer = writerRef.current;
 
-      if (portRef.current) {
-        await portRef.current.close();
+    if (!writer) {
+      return;
+    }
+
+    writerRef.current = null;
+
+    try {
+      await writer.close();
+    } catch {
+      // The device may already be gone or the stream may already be closing.
+    } finally {
+      try {
+        writer.releaseLock();
+      } catch {
+        // Safe to ignore when the stream has already released the lock.
+      }
+    }
+  }, []);
+
+  const attachOpenPort = useCallback((port, message) => {
+    if (!port?.writable) {
+      throw new Error('마이크로비트 쓰기 스트림을 찾을 수 없습니다. USB를 다시 연결해 주세요.');
+    }
+
+    portRef.current = port;
+
+    if (!writerRef.current) {
+      writerRef.current = port.writable.getWriter();
+    }
+
+    setSerialStatus('connected');
+    setPortLabel(getPortLabel(port));
+    setSerialMessage(message);
+    return true;
+  }, []);
+
+  const disconnect = useCallback(async () => {
+    const port = portRef.current;
+
+    try {
+      setSerialStatus('disconnecting');
+      setSerialMessage('USB 연결을 해제하는 중입니다.');
+      await closeWriter();
+
+      if (isPortOpen(port)) {
+        await port.close();
       }
 
       portRef.current = null;
@@ -120,9 +169,18 @@ function useSerialConnection() {
       setPortLabel('연결 안 됨');
       setSerialMessage('USB 연결이 해제되었습니다.');
     } catch (error) {
+      if (isAlreadyClosedError(error)) {
+        portRef.current = null;
+        setSerialStatus('disconnected');
+        setPortLabel('연결 안 됨');
+        setSerialMessage('USB 연결이 해제되었습니다.');
+        return;
+      }
+
+      setSerialStatus(isPortOpen(portRef.current) ? 'connected' : 'disconnected');
       setSerialMessage(error.message || '연결 해제 중 문제가 생겼습니다.');
     }
-  }, [releaseWriter]);
+  }, [closeWriter]);
 
   const connect = useCallback(async () => {
     if (!('serial' in navigator)) {
@@ -132,33 +190,37 @@ function useSerialConnection() {
     }
 
     try {
+      if (isPortOpen(portRef.current)) {
+        return attachOpenPort(portRef.current, '이미 열린 마이크로비트 연결을 다시 사용합니다.');
+      }
+
       setSerialStatus('connecting');
       setSerialMessage('USB 포트를 선택하는 중');
 
       const port = await navigator.serial.requestPort();
-      await port.open({ baudRate: 115200 });
-
-      portRef.current = port;
-      writerRef.current = port.writable.getWriter();
-
-      setSerialStatus('connected');
-      setPortLabel(getPortLabel(port));
-      setSerialMessage('마이크로비트와 연결되었습니다.');
-      return true;
-    } catch (error) {
-      portRef.current = null;
       releaseWriter();
-      setSerialStatus('disconnected');
+
+      await openPortIfNeeded(port, { baudRate: 115200 });
+
+      return attachOpenPort(port, '마이크로비트와 연결되었습니다.');
+    } catch (error) {
+      if (!isPortOpen(portRef.current)) {
+        portRef.current = null;
+        releaseWriter();
+        setSerialStatus('disconnected');
+      }
 
       if (error?.name === 'NotFoundError') {
         setSerialMessage('USB 포트 선택이 취소되었습니다.');
+      } else if (isAlreadyOpenError(error)) {
+        setSerialMessage('이미 열린 마이크로비트 연결을 확인했습니다. 다시 전송해 보세요.');
       } else {
         setSerialMessage(error.message || 'USB 연결에 실패했습니다.');
       }
 
       return false;
     }
-  }, [releaseWriter]);
+  }, [attachOpenPort, releaseWriter]);
 
   const writeMessage = useCallback(async (value) => {
     const message = String(value ?? '').trim();
@@ -321,10 +383,18 @@ function HomePage({ serial }) {
             </div>
           </div>
 
-          <button className="primary-action" type="button" onClick={serial.connect}>
-            <Usb size={19} strokeWidth={2.4} />
-            <span>connect</span>
-          </button>
+          <div className="connection-actions">
+            <button className="primary-action" type="button" onClick={serial.connect}>
+              <Usb size={19} strokeWidth={2.4} />
+              <span>connect</span>
+            </button>
+            <button className="danger-action full-width-action" type="button" onClick={serial.disconnect}>
+              <Unplug size={19} strokeWidth={2.4} />
+              <span>disconnect</span>
+            </button>
+          </div>
+
+          <p className="connection-note">테스트 후에는 꼭 연결을 해제해 주세요.</p>
         </section>
 
         <section className="tool-panel" aria-labelledby="send-title">
