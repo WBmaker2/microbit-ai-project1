@@ -17,7 +17,7 @@ import {
 import { isAlreadyClosedError, isAlreadyOpenError, isPortOpen, openPortIfNeeded } from './serialConnection.js';
 import './styles.css';
 
-const DEFAULT_MODEL_URL = 'https://teachablemachine.withgoogle.com/models/3_iGiqd9o/';
+const EXAMPLE_MODEL_URL = 'https://teachablemachine.withgoogle.com/models/3_iGiqd9o/';
 const DEFAULT_CONFIDENCE = 90;
 const TFJS_SRC = 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js';
 const SPEECH_COMMANDS_SRC =
@@ -435,8 +435,8 @@ function HomePage({ serial }) {
 }
 
 function AiFanPage({ serial }) {
-  const [modelInput, setModelInput] = useState(DEFAULT_MODEL_URL);
-  const [modelUrl, setModelUrl] = useState(DEFAULT_MODEL_URL);
+  const [modelInput, setModelInput] = useState('');
+  const [modelUrl, setModelUrl] = useState('');
   const [confidenceInput, setConfidenceInput] = useState(String(DEFAULT_CONFIDENCE));
   const [confidence, setConfidence] = useState(DEFAULT_CONFIDENCE);
   const [modelStatus, setModelStatus] = useState('모델 준비 전');
@@ -600,7 +600,7 @@ function AiFanPage({ serial }) {
               type="url"
               value={modelInput}
               onChange={(event) => setModelInput(event.target.value)}
-              placeholder={DEFAULT_MODEL_URL}
+              placeholder={EXAMPLE_MODEL_URL}
             />
             <button className="secondary-action" type="button" onClick={handleModelOk}>
               <span>ok</span>
