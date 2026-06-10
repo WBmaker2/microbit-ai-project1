@@ -665,6 +665,7 @@ function AiFanPage({ serial }) {
             onChange={(event) => setConfidenceInput(event.target.value)}
             aria-label="confidence 슬라이더"
           />
+          <p className="confidence-note">머신러닝 모델이 잘 작동하지 않으면 기준 값을 조금 낮추어서 다시 시도해 보세요.</p>
         </section>
 
         <section className="control-panel" aria-labelledby="usb-title">
