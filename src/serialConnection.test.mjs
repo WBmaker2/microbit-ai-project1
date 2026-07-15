@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { isAlreadyOpenError, isPortOpen, openPortIfNeeded } from './serialConnection.js';
+import {
+  isAlreadyOpenError,
+  isPortOpen,
+  normalizeSerialMessage,
+  openPortIfNeeded,
+} from './features/serial/serialConnection.js';
 
 test('isPortOpen detects a port with readable or writable streams', () => {
   assert.equal(isPortOpen({ writable: {} }), true);
@@ -61,4 +66,9 @@ test('openPortIfNeeded still throws unrelated open errors', async () => {
   };
 
   await assert.rejects(() => openPortIfNeeded(port, { baudRate: 115200 }), /USB permission denied/);
+});
+
+test('normalizeSerialMessage trims commands and rejects empty values', () => {
+  assert.equal(normalizeSerialMessage(' on '), 'on');
+  assert.throws(() => normalizeSerialMessage('   '), /전송할 문자열/);
 });

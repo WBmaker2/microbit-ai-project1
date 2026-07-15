@@ -3,11 +3,21 @@ export function isPortOpen(port) {
 }
 
 export function isAlreadyOpenError(error) {
-  return error?.name === 'InvalidStateError' || /already open/i.test(error?.message || '');
+  return /already open/i.test(error?.message || '');
 }
 
 export function isAlreadyClosedError(error) {
-  return error?.name === 'InvalidStateError' || /not open|already closed|closed/i.test(error?.message || '');
+  return /not open|already closed|closed/i.test(error?.message || '');
+}
+
+export function normalizeSerialMessage(value) {
+  const message = String(value ?? '').trim();
+
+  if (!message) {
+    throw new Error('전송할 문자열을 입력해 주세요.');
+  }
+
+  return message;
 }
 
 export async function openPortIfNeeded(port, options) {

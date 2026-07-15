@@ -15,8 +15,9 @@ export function readLabelsFromMetadata(metadata) {
   return labels;
 }
 
-export async function loadModelLabelsFromMetadata(modelBaseUrl, fetchImpl = fetch) {
-  const response = await fetchImpl(metadataUrlForModel(modelBaseUrl));
+export async function loadModelLabelsFromMetadata(modelBaseUrl, options = {}) {
+  const { fetchImpl = fetch, signal } = options;
+  const response = await fetchImpl(metadataUrlForModel(modelBaseUrl), { signal });
 
   if (!response.ok) {
     throw new Error(`metadata.json을 불러오지 못했습니다. (${response.status})`);

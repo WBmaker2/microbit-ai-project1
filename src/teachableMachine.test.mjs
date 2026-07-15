@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { loadModelLabelsFromMetadata, metadataUrlForModel, readLabelsFromMetadata } from './teachableMachine.js';
+import {
+  loadModelLabelsFromMetadata,
+  metadataUrlForModel,
+  readLabelsFromMetadata,
+} from './features/ai/modelMetadata.js';
 
 test('metadataUrlForModel points to metadata.json in the model folder', () => {
   assert.equal(
@@ -23,14 +27,16 @@ test('readLabelsFromMetadata throws when labels are missing', () => {
 
 test('loadModelLabelsFromMetadata fetches and parses metadata.json', async () => {
   const calls = [];
-  const labels = await loadModelLabelsFromMetadata('https://example.com/model/', async (url) => {
-    calls.push(url);
-    return {
-      ok: true,
-      async json() {
-        return { wordLabels: ['배경 소음', 'on', 'off'] };
-      },
-    };
+  const labels = await loadModelLabelsFromMetadata('https://example.com/model/', {
+    fetchImpl: async (url) => {
+      calls.push(url);
+      return {
+        ok: true,
+        async json() {
+          return { wordLabels: ['배경 소음', 'on', 'off'] };
+        },
+      };
+    },
   });
 
   assert.deepEqual(calls, ['https://example.com/model/metadata.json']);
@@ -40,10 +46,12 @@ test('loadModelLabelsFromMetadata fetches and parses metadata.json', async () =>
 test('loadModelLabelsFromMetadata reports fetch failures', async () => {
   await assert.rejects(
     () =>
-      loadModelLabelsFromMetadata('https://example.com/model/', async () => ({
-        ok: false,
-        status: 404,
-      })),
+      loadModelLabelsFromMetadata('https://example.com/model/', {
+        fetchImpl: async () => ({
+          ok: false,
+          status: 404,
+        }),
+      }),
     /404/,
   );
 });

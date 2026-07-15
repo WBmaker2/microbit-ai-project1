@@ -1,0 +1,214 @@
+.app-shell {
+  min-height: 100vh;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 78px;
+  padding: 14px clamp(20px, 4vw, 54px);
+  border-bottom: 1px solid rgba(216, 229, 239, 0.84);
+  background: rgba(246, 251, 255, 0.94);
+  backdrop-filter: blur(16px);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.brand-mark {
+  display: inline-grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--cobalt);
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.22);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.tab-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 9px 14px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.tab-button.is-active {
+  background: var(--ink);
+  color: #ffffff;
+}
+
+main {
+  width: min(1200px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 42px 0 64px;
+}
+
+.page {
+  display: grid;
+  gap: 24px;
+}
+
+.intro-panel,
+.ai-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 30px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow);
+}
+
+.home-grid,
+.fan-layout {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 18px;
+}
+
+.tool-panel,
+.control-panel,
+.status-panel {
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.tool-panel {
+  grid-column: span 4;
+  min-height: 270px;
+}
+
+.control-panel {
+  grid-column: span 6;
+}
+
+.runner-panel {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.status-panel {
+  grid-column: span 12;
+  background: #102033;
+  color: #ffffff;
+}
+
+.status-panel h2,
+.status-panel p {
+  color: #ffffff;
+}
+
+.status-panel p {
+  color: rgba(255, 255, 255, 0.74);
+}
+
+.panel-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.panel-heading > svg {
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  padding: 10px;
+  border-radius: 8px;
+  background: var(--surface-strong);
+  color: var(--cobalt);
+}
+
+.panel-heading p {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.serial-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 188px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.serial-badge > span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--coral);
+}
+
+.serial-badge.is-connected > span {
+  background: var(--green);
+}
+
+.serial-badge strong,
+.serial-badge small {
+  display: block;
+  letter-spacing: 0;
+}
+
+.serial-badge strong {
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.serial-badge small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
